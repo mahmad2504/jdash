@@ -100,6 +100,7 @@ $(document).ready(function()
 		success: function(response)
 		{
 			$('.loading').hide();
+			console.log(response);
 			ShowTree(JSON.parse(response)) ;
 		},
 		error: function (error) 

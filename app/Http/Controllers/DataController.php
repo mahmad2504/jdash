@@ -55,8 +55,8 @@ class DataController extends Controller
 		$data = file_get_contents($path."/"."tree");
     	$tree = unserialize($data);
 		
-		$cal = Utility::GetHolidays("https://calendar.google.com/calendar/ical/mumtazahmad2504%40gmail.com/private-fe2463be8629ea4c59bc9374e7f8ac04/basic.ics",$tree->sdate,$tree->edate,'Holiday');
-		dd($cal);
+		//$cal = Utility::GetHolidays("https://calendar.google.com/calendar/ical/mumtazahmad2504%40gmail.com/private-fe2463be8629ea4c59bc9374e7f8ac04/basic.ics",$tree->sdate,$tree->edate,'Holiday');
+		//dd($cal);
 		return $tree;
 	}
     public function GetTreeViewData($user,$project)
