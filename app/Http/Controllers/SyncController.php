@@ -10,6 +10,9 @@ use App\Task;
 use App\Jira;
 use App\ConsoleLog;
 use App\iCal;
+use App\Tj;
+use App\ResourcesContainer;
+
 use Redirect,Response;
 use Auth;
 
@@ -40,15 +43,28 @@ class SyncController extends Controller
     	}
 		/// 
 		
+		
 		$project = $projects[0];
 		
 		//var_dump($project->jirauri);
 		$this->jiraurl = config('jira.servers')[$project->jirauri]['uri'];
 		$this->jiraconfig = config('jira.servers')[$project->jirauri];
-		//
+		////////////////////////////////////////////////////////////////////////////
+		// One can read previously saved data in the tree here
 		
     	$path = 'data/'.$user.'/'.$project->id;
-
+		$treepath = $path."/"."tree";
+		if(file_exists($treepath))
+		{
+			$otree = file_get_contents($treepath);
+			$seed = unserialize($otree);
+			$resources = $seed->resources;
+			foreach($resources as $resource)
+			{
+				ResourcesContainer::Add($resource);
+			}
+		}
+		//////////////////////////////////////////////////////////////////////////////
     	$rebuild = $request->input("rebuild");
    		if($rebuild == 1)
    		{
@@ -60,10 +76,7 @@ class SyncController extends Controller
 
     	$estimation_method = $project->estimation;
     	$seed = new Task(1,0,0,$project->name,$project->jiraquery);
-
-
     	ConsoleLog::Send(time(),"Syncing Now");
-    	
     	Jira::Initialize($this->jiraurl,'himp','hmip',$path);
 
     	$this->Populate($seed);
@@ -97,6 +110,28 @@ class SyncController extends Controller
 		
 		$seed->sdate = $project->sdate;
 		$seed->edate = $project->edate;
+		$seed->resources = [];
+		$resources = ResourcesContainer::Get();
+		
+		
+		
+		foreach($resources as $resource)
+		{
+			$filename = $resource->vacations_data;
+			if(!file_exists($filename))
+			{
+				$obj = new \StdClass();
+				$obj->profile = new \StdClass();
+				$obj->profile->name = $resource->name;
+				$obj->profile->displayname = $resource->displayname;
+				$obj->profile->email = $resource->email;
+				$obj->vacations  = [];
+				$jsonstr = json_encode($obj, JSON_PRETTY_PRINT);
+				file_put_contents($filename, stripslashes($jsonstr));
+			}
+			$seed->resources[]=$resource;
+			//var_dump($resource);
+		}
 		
     	$data = serialize($seed);
     	file_put_contents($path."/"."tree", $data);
@@ -104,8 +139,13 @@ class SyncController extends Controller
 		Project::where('id', $project->id)->update(array('last_synced' => $last_synced,'dirty'=>0, 'progress'=>$seed->progress));
     	ConsoleLog::Send(time(),"Sync Completed Successfully");
 		
+		//$pheader = Tj::FlushProjectHeader($seed);
+		//$lheader = $this->FlushLeavesHeader($calendar);
 		
 		
+		
+	//	$pheader = Tj::FlushResourceHeader($resources);
+		//var_dump($pheader);
 		//$this->PrintTree($seed);
 		//echo "Unestimated = ".$unestimated_count;
     	//echo($user);
@@ -124,8 +164,6 @@ class SyncController extends Controller
 			  sleep(1);
 		  }
 		  ConsoleLog::Send(time(),"Sync Completed Successfully");
-		  ConsoleLog::Send(time(),"Sync Completed Successfully");
-
 	}
 	function Populate($task)
 	{
@@ -163,10 +201,7 @@ class SyncController extends Controller
 		
 		if($task->status == 'RESOLVED')
 			$task->progress = 100;
-		
-			
 		$children = $task->children;
-		
 		foreach($task->children as $child)
 			$this->ComputeProgress($child);
 	}

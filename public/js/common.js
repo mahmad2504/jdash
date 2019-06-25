@@ -6,6 +6,9 @@ function MakeDate(day,month,year)
 	var today = year+"-"+(month)+"-"+(day) ;
 	return today;
 }
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function GetDay()
 {

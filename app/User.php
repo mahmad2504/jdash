@@ -41,4 +41,10 @@ class User extends Authenticatable
 	{
 		return $this->hasMany('App\Project');
 	}
+	public function IsAdmin()
+	{
+		if( $this->role == 'admin')
+			return true;
+		return false;
+	}
 }

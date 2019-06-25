@@ -40,17 +40,25 @@ class DataController extends Controller
 		$users = User::where('name',$user)->get();
     	if(count($users)==0)
     	{
-    		return Response::json(['error'=>'User does not exist']);
+			echo Response::json(['error'=>'User does not exist']);
+			exit();
     	}
-    	$projects = Project::where('name',$project)->get();
+		$projects = Project::where('name',$project)->get();
     	if(count($projects)==0)
     	{
-    		return Response::json(['error'=>'Project does not exist']);
+			echo Response::json(['error'=>'Project does not exist']);
+			exit();
     	}
     	$path = 'data/'.$user.'/'.$projects[0]->id;
+		
 		if(!file_exists($path."/"."tree"))
 		{
-			return null;
+			$returnData = array(
+				'status' => 'error',
+				'message' => 'An error occurred!'
+			);
+			echo Response::json($returnData, 500);
+			exit();
 		}
 		$data = file_get_contents($path."/"."tree");
     	$tree = unserialize($data);
@@ -62,6 +70,7 @@ class DataController extends Controller
     public function GetTreeViewData($user,$project)
     {
     	$tree=$this->GetProjectTree($user,$project);
+		
 		if($tree==null)
 		{
 			$returnData = array(
@@ -118,5 +127,19 @@ class DataController extends Controller
     	foreach($task->children as $ctask)
     		$this->FormatForTreeView($ctask);
     }
-    
+	public function Test($user,$project)
+	{
+		$tree = $this->GetProjectTree($user,$project);
+		$this->PrintTree($tree);
+	}
+	function PrintTree($task)
+	{
+		echo $task->key."  resource=".$task->assignee->name.'<br>';
+		//$spaces ='';
+		//for($i=1;$i<$task->level;$i++)
+		//	$spaces .= '  ';
+		//ConsoleLog::Send(time(),$spaces." ".$task->extid." ".$task->priority." ".$task->key."  ".$task->timespent."/".$task->estimate." ".$task->progress."%"."  ".$task->query." ".$task->status);
+		foreach($task->children as $child)
+			$this->PrintTree($child);
+	}
 }

@@ -1,6 +1,7 @@
 <?php
 namespace App;
 use App\ConsoleLog;
+use App\ResourcesContainer;
 class Task
 {
 	public $children = array();
@@ -29,6 +30,8 @@ class Task
 		$this->progress = 0;
 		$this->oissuetype = '';
 		$this->issuetype = 'PROJECT';
+		$this->assignee = null;
+		$this->assignee = ResourcesContainer::Create('unassigned','unassigned','','');
 	}
 	
 	function MapIssueType($issuetype)
@@ -36,7 +39,7 @@ class Task
 		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement'))
 			return 'REQUIREMENT';
 		
-		if($issuetype=='Workpackage')
+		if(($issuetype=='Workpackage')||($issuetype=='Project'))
 			return 'WORKPACKAGE';
 		
 		if($issuetype=='Bug')
@@ -45,7 +48,7 @@ class Task
 		if($issuetype=='Epic')
 			return 'EPIC';
 		
-		if(($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
+		if(($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
 		
 		ConsoleLog::Send(time(),"Unmapped type=".$issuetype);
@@ -54,7 +57,7 @@ class Task
 	}
 	function MapStatus($status)
 	{
-		if(($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened'))
+		if(($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
 			return 'OPEN';
 		if(($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
@@ -62,7 +65,7 @@ class Task
 		if($status=='Open')
 			return 'OPEN';
 		
-		if(($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review'))
+		if(($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review'))
 			return 'INPROGRESS';
 		ConsoleLog::Send(time(),"Unmapped status=".$status);
 		exit();
@@ -100,23 +103,16 @@ class Task
 			$ntask->summary = $task->fields->summary;
 			$ntask->oissuetype = $task->fields->issuetype->name;
 			$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name);
-			
 			if(isset($task->fields->assignee))
 			{
-				$resource = new \StdClass();
-				$resource->name = $task->fields->assignee->name;
-				$resource->display_name = $task->fields->assignee->displayName;
-				
-				$resource = Resources::Add($resource);
-				$ntask->assignee = $resource;
+				$ntask->assignee = ResourcesContainer::Create($task->fields->assignee->name,
+								  $task->fields->assignee->displayName,
+								  $task->fields->assignee->emailAddress,
+								  $task->fields->assignee->timeZone);
 			}
 			else
 			{
-				$resource = new \StdClass();
-				$resource->name = 'unassigned';
-				$resource->display_name = 'unassigned';
-				$resource = Resources::Add($resource);
-				$ntask->assignee = $resource;
+				$ntask->assignee = ResourcesContainer::Create('unassigned','unassigned','','');
 			}
 				
 			$ntask->query = null;

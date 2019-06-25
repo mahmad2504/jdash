@@ -190,8 +190,15 @@ function AddCard(project,row)
 	var body=$('<div class="card-body">');
 	var desc=$('<p  rel="tooltip" title="Description" class="card-text" style="font-size:100%;">'+project.description+'</p>');
 	var query=$('<p  rel="tooltip" title="Seed Jira Query" class="card-text" style="font-size:100%;">'+project.jiraquery+'</p>');
-	var footer=$('<div class="card-footer bg-transparent"><i projectid="'+project.id+'" class="editbutton far fa-edit icon float-left" rel="tooltip" title="Edit Project" data-toggle="modal" data-target="#editmodal"></i><i projectid="'+project.id+'" rel="tooltip" title="Sync With Jira" class="syncbutton fas fa-sync icon float-left ml-1"></i><a href='+'"dashboard/'+username+'/'+project.name+'"><i projectid="'+project.id+'" rel="tooltip" title="Dashboard" class="icon fas fa-list-alt float-right"></i></a>'+'<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Last sync '+project.last_synced+'</p>'+'</div>');
-
+	var footerstr='<div class="card-footer bg-transparent">';
+	footerstr+='<i projectid="'+project.id+'" class="editbutton far fa-edit icon float-left" rel="tooltip" title="Edit Project" data-toggle="modal" data-target="#editmodal"></i>';
+	footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Sync With Jira" class="syncbutton fas fa-sync icon float-left ml-1"></i>';
+	footerstr+='<a class="float-right ml-1" href='+'"/dashboard/'+username+'/'+project.name+'">';
+		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Dashboard" class="icon fas fa-list-alt float-right"></i></a>';
+	footerstr+='<a class="float-right" href='+'"/view/resources/'+username+'/'+project.name+'">';
+		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Resources" class="icon fas fa-user-circle float-right"></i></a>';
+	footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Last sync '+project.last_synced+'</p></div>';
+	var footer = $(footerstr);
 	body.append(desc);
 	body.append(query);
 	card.append(header);
@@ -199,6 +206,7 @@ function AddCard(project,row)
 	card.append(footer);
 	col.append(card);
 	row.append(col);
+	
 }
 function PopulateCard(projects)
 {

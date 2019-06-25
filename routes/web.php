@@ -22,7 +22,8 @@ Route::get('/', function () {
 });
 
 Auth::routes();
-Route::get('/test','WidgetController@Test');
+Route::get('/test/{user}/{project}','DataController@Test');
+
 
 Route::get('/treeview/{user}/{project}','WidgetController@RequirementsTreeView')->name('requirementstreeviewdata');
 
@@ -39,4 +40,18 @@ Route::get('/project/delete/{id}', 'ProjectController@Delete')->name('deleteproj
 Route::get('/project/{name}','ProjectController@Project')->name('project');
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/', 'HomeController@index')->name('default');
-Route::get('/adminpanel/{user}', 'AdminController@index');
+Route::get('/admin/{user}', 'AdminController@index');
+Route::get('/admin/configure/resources', 'AdminController@ConfigureResources');
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+//Route::resource('resources', 'ResourceController');
+Route::get('/view/resources/{user}/{project}', 'ResourceController@projectview');
+Route::get('/resources', 'ResourceController@index');
+Route::get('/resources/create', 'ResourceController@create');
+
+Route::get('/data/resources/calendar/{user}', 'ResourceController@calendardata');
+Route::put('/data/resources/calendar', 'ResourceController@savecalendardata');  //Put ...all data is posted
+
+Route::get('/test', 'TestController@test');
